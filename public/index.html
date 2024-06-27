@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethereum Balance Checker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+        }
+        input, button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        #balance {
+            margin-top: 20px;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ethereum Balance Checker</h1>
+    <div>
+        <input type="text" id="ethAddress" placeholder="Enter Ethereum Address">
+        <button onclick="checkBalance()">Check Balance</button>
+    </div>
+    <div>
+        <form id="qrForm" enctype="multipart/form-data">
+            <input type="file" name="qrImage" id="qrImage" accept="image/*">
+            <button type="button" onclick="uploadQR()">Scan QR Code</button>
+        </form>
+    </div>
+    <div id="balance"></div>
+
+    <!-- Ensure web3.js or an Ethereum provider script is included -->
+    <!-- Example with MetaMask provider script -->
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.6.1/dist/web3.min.js"></script>
+    <script>
+        // Initialize web3
+        if (typeof web3 !== 'undefined') {
+            web3 = new Web3(web3.currentProvider); // Use MetaMask's provider
+        } else {
+            // Handle the case where web3 is not available
+            alert('Web3 provider not detected. Please install MetaMask or use an Ethereum-enabled browser.');
+        }
+
+        async function checkBalance() {
+            const address = document.getElementById('ethAddress').value;
+            if (!web3.utils.isAddress(address)) {
+                alert('Invalid Ethereum address');
+                return;
+            }
+            const response = await fetch(`/balance/${address}`);
+            const data = await response.json();
+            document.getElementById('balance').innerText = `Balance: ${data.balance} ETH`;
+        }
+
+        async function uploadQR() {
+            const formData = new FormData(document.getElementById('qrForm'));
+            const response = await fetch('/scan-qr', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            document.getElementById('balance').innerText = `Address: ${data.address}\nBalance: ${data.balance} ETH`;
+        }
+    </script>
